@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="main">
+	<select id="loginCheck" parameterType="User" resultType="User">
+		select user_id, user_password, user_name from user where user_id = #{user_id} and user_password = #{user_password}
+	</select>
+	
+	<!-- duple id check -->
+	<select id="dupleCheck" parameterType="User" resultType="User">
+		select user_id from user where user_id = #{user_id}
+	</select>
+	
+	<select id="getCommonCode" parameterType="java.util.HashMap" resultType="Code">
+		select code_group, code, code_name, surplus1, surplus2, surplus3 from code
+		where use_yn = 'Y'
+		<choose>
+            <when test="data.size != 0">
+                and code_group in
+                <foreach collection="data" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </when>
+        </choose>
+	</select>
+	
+	<insert id="signUp" parameterType="User">
+		insert into user (
+			user_id, user_password, user_name, nick_name, email, 
+			domain, cellphone1, cellphone2, cellphone3, gender, 
+			birth, photo, recommand_aggrement, information_aggrement, remark, 
+			hobby1, hobby2, hobby3, job, area, 
+			purpose1, purpose2, point, regist_user_id, push_message_aggrement, 
+			email_aggrement
+		) values (
+			#{user_id}, #{user_password}, #{user_name}, #{nick_name}, #{email}, 
+			#{domain}, #{cellphone1}, #{cellphone2}, #{cellphone3}, #{gender}, 
+			#{birth}, #{photo}, #{recommand_aggrement}, #{information_aggrement}, #{remark}, 
+			#{hobby1}, #{hobby2}, #{hobby3}, #{job}, #{area}, 
+			#{purpose1}, #{purpose2}, #{point}, #{regist_user_id}, #{push_message_aggrement}, 
+			#{email_aggrement}
+		)
+	</insert>
+	
+	<insert id="insertFilter" parameterType="Recommand_filter">
+		insert into user_recommand_filter (
+			user_id, filter_cd, filter_value, use_yn, regist_date, regist_user_id
+		) values (
+			#{regist_user_id}, #{filter_cd}, #{filter_value}, #{use_yn}, now(), #{regist_user_id}
+		)
+	</insert>
+	
+	<update id="updateFilter" parameterType="Recommand_filter">
+		update user_recommand_filter set
+			filter_cd = #{filter_cd}, 
+			filter_value = #{filter_value}, 
+			update_date = now(), 
+			update_user_id = #{update_user_id}
+		where
+			seq_no = #{seq_no}
+	</update>
+	
+	<delete id="deleteFilter" parameterType="Recommand_filter">
+		delete from user_recommand_filter
+		where
+			seq_no = #{seq_no}
+	</delete>
+	
+	<select id="getRecommandFilter" parameterType="Recommand_filter" resultType="Recommand_filter">
+		select
+			user_id, filter_cd, filter_value, use_yn, regist_date, regist_user_id, update_date, update_user_id, seq_no
+		from user_recommand_filter
+		where
+			user_id = #{user_id}
+	</select>
+	
+	<select id="getSurveyList" parameterType="Survey" resultType="Survey">
+		select
+			a.user_id, a.seq_no, a.survey_subject, a.start_date, a.end_date, a.config_value, a.user_value, a.survey_status, a.vote_yes, a.vote_no,
+			a.due_time, ifnull(a.vote_yes, 0)+ifnull(a.vote_no, 0) vote
+		from
+			user_survey a
+			left outer join user_survey_detail b on a.seq_no = b.survey_seq_no
+		where
+			a.user_id != #{user_id}
+			and date_format(a.regist_date, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+			and a.survey_status in ('1')
+			and b.user_id is null
+		order by a.regist_date desc
+	</select>
+	
+	<select id="getMySurveyList" parameterType="Survey" resultType="Survey">
+		select
+			a.user_id, a.seq_no, a.survey_subject, a.start_date, a.end_date, a.config_value, a.user_value, a.survey_status, a.vote_yes, a.vote_no,
+			a.due_time, ifnull(a.vote_yes, 0)+ifnull(a.vote_no, 0) vote
+		from
+			user_survey a
+		where
+			a.user_id = #{user_id}
+		order by a.regist_date desc
+	</select>
+	
+	<select id="getMaxUserValue" parameterType="Survey" resultType="Survey">
+		select 
+			case survey_status when '2' then truncate(user_value*0.7, 0)-1 else truncate(user_value/2*0.7, 0)-1 end user_value
+        from 
+        	user_survey a 
+        where 
+        	user_id = #{user_id}
+        	and survey_status in ('2', '3')
+        	and date_format(a.regist_date, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d') 
+        order by a.regist_date desc 
+        limit 1
+	</select>
+	
+	<select id="checkSurvey" parameterType="Survey" resultType="Integer">
+		select case when doing_count > 0 || finished_count > 1 then 1 else 0 end from (
+			select
+				count(case when survey_status = '1' then 1 end) doing_count,
+				count(case when survey_status = '2' or survey_status = '3' then 1 end) finished_count
+			from 
+				user_survey a 
+			where 
+				user_id = #{user_id}
+				and survey_status != '0'
+	        	and date_format(a.regist_date, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+			) a
+	</select>
+	
+	<insert id="insertSurvey" parameterType="Survey">
+		insert into user_survey (
+			user_id, survey_subject, start_date, end_date, config_value, 
+			user_value, survey_status, regist_date, regist_user_id, 
+			vote_yes, vote_no, due_time
+		)
+		select
+			#{user_id}, #{survey_subject}, now(), date_add(now(), interval #{due_time} hour), 100,
+			#{user_value}, '1', now(), #{user_id},
+			0, 0, #{due_time}
+	</insert>
+	
+	<select id="checkVote" parameterType="Survey" resultType="Integer">
+		select count(*) from user_survey_detail where user_id = #{user_id} and survey_seq_no = #{seq_no}
+	</select>
+	
+	<select id="checkSurveyForVote" parameterType="Survey" resultType="Integer">
+		select count(*) from user_survey where seq_no = #{seq_no} and
+		<![CDATA[
+		((vote_yes + vote_no) >= user_value or end_date <= now())
+		]]> 
+	</select>
+	
+	<update id="updateVote" parameterType="Survey">
+		update user_survey set
+			survey_status = case when user_value = vote_yes + vote_no + 1 then '2' else survey_status end,
+			vote_yes = vote_yes + case #{vote_yes_or_no} when 'Y' then 1 else 0 end,
+			vote_no = vote_no + case #{vote_yes_or_no} when 'N' then 1 else 0 end,
+			update_date = now(),
+			update_user_id = #{user_id}
+		where
+			seq_no = #{seq_no}
+	</update>
+	
+	<insert id="insertVoteDetail" parameterType="Survey">
+		insert into user_survey_detail (
+			user_id, survey_seq_no, vote_yes_or_no, point, regist_date, regist_user_id
+		) values (
+			#{user_id}, #{seq_no}, #{vote_yes_or_no}, 1, now(), #{user_id}
+		)
+	</insert>
+	
+	<insert id="insertUserPointWithSurvey" parameterType="Point">
+		insert into user_point (
+			user_id, route, point, adjustment, regist_date, regist_user_id
+		) values (
+			#{user_id}, #{route}, #{point}, #{adjustment}, now(), #{user_id}
+		)
+	</insert>
+	
+	<update id="updateUserPointWithSurveyVote" parameterType="User">
+		update user set
+			point = point + #{point},
+			update_date = now(),
+			update_user_id = #{user_id}
+		where
+			user_id = #{user_id}
+	</update>
+	
+	<insert id="insertUserPointWithCard" parameterType="Card">
+		insert into user_game_card (
+			user_id, play_date, lucky_value, other_value, betting_point, paid_point, regist_user_id, regist_date
+		) values (
+			#{user_id}, now(), #{lucky_value}, #{other_value}, #{betting_point}, #{paid_point}, #{user_id}, now()
+		)
+	</insert>
+
+	<select id="getUserPoint" parameterType="User" resultType="User">
+		select
+			point
+		from
+			user
+		where
+			user_id = #{user_id}
+	</select>
+	
+	<select id="getUserPoints" parameterType="Point" resultType="Point">
+		select 
+			b.code_name route, a.point*a.adjustment point, date_format(a.regist_date, '%Y-%m-%d') regist_date
+		from 
+			user_point a join code b on a.route = b.code and b.code_group = 'PR'
+		where 
+			a.user_id = #{user_id}
+		order by 
+			a.regist_date desc
+	</select>
+</mapper>

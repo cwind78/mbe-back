@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "HTTP://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<settings>
+        <setting name="cacheEnabled" value="false" />
+        <setting name="useGeneratedKeys" value="true" />
+        <setting name="defaultExecutorType" value="REUSE" />
+    </settings>
+    
+    <typeAliases>
+		<typeAlias type="com.org.app.main.vo.User" alias="User" />
+		<typeAlias type="com.org.app.main.vo.Code" alias="Code" />
+		<typeAlias type="com.org.app.main.vo.Recommand_filter" alias="Recommand_filter" />
+		<typeAlias type="com.org.app.main.vo.Survey" alias="Survey" />
+		<typeAlias type="com.org.app.main.vo.Point" alias="Point" />
+		<typeAlias type="com.org.app.main.vo.Card" alias="Card" />
+	</typeAliases>
+    
+	<mappers>
+		<mapper resource="com/org/app/sql/main/main.xml" />
+	</mappers>
+</configuration>

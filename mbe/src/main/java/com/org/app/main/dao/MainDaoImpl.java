@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 import com.org.app.main.vo.Card;
 import com.org.app.main.vo.Code;
 import com.org.app.main.vo.Point;
+import com.org.app.main.vo.Recommand_Denial;
+import com.org.app.main.vo.Recommand_User;
 import com.org.app.main.vo.Recommand_filter;
 import com.org.app.main.vo.Survey;
 import com.org.app.main.vo.Surveys;
@@ -152,5 +154,46 @@ public class MainDaoImpl implements MainDao {
 	 */
 	public List<Point> getUserPoints(Point point) throws Exception {
 		return sqlSessionTemplate.selectList("main.getUserPoints", point);
+	}
+	/*
+	 * recommand user(insert user_recommand)
+	 */
+	public Integer insertRecommandUser(User user) throws Exception {
+		return sqlSessionTemplate.insert("main.insertRecommandUser", user);
+	}
+	
+	/*
+	 * get recommand user
+	 */
+	public List<Recommand_User> getRecommandUser(User user) throws Exception {
+		return sqlSessionTemplate.selectList("main.getRecommandUser", user);
+	}
+	
+	/*
+	 * update recommand status
+	 */
+	public Integer updateRecommandStatus(Recommand_User recommand_user) throws Exception {
+		return sqlSessionTemplate.update("main.updateRecommandStatus", recommand_user);
+	}
+	
+	/*
+	 * insert recommand denial
+	 */
+	public Integer insertUserRecommandDenial(Recommand_Denial recommand_denial) throws Exception {
+		return sqlSessionTemplate.insert("main.insertUserRecommandDenial", recommand_denial);
+	}
+	
+	/*
+	 * get denial count on today
+	 */
+	public Integer checkDenial(User user) throws Exception {
+		return sqlSessionTemplate.selectOne("main.checkDenial", user);
+	}
+	
+	/*
+	 * get called recommand list
+	 */
+	public List<User> calledMeRecommandedUser(User user) throws Exception {
+		return sqlSessionTemplate.selectList("main.calledMeRecommandedUser", user);
 	}
 }

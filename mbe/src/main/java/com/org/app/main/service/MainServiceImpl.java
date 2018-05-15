@@ -12,6 +12,8 @@ import com.org.app.main.vo.Cards;
 import com.org.app.main.vo.Code;
 import com.org.app.main.vo.Filters;
 import com.org.app.main.vo.Point;
+import com.org.app.main.vo.Recommand_Denial;
+import com.org.app.main.vo.Recommand_User;
 import com.org.app.main.vo.Recommand_filter;
 import com.org.app.main.vo.Survey;
 import com.org.app.main.vo.Surveys;
@@ -29,6 +31,8 @@ public class MainServiceImpl implements MainService {
 			session.setAttribute("USER_ID", user.getUser_id());
 			session.setAttribute("USER_NAME", list.get(0).getUser_name());
 			session.setMaxInactiveInterval(60*120);
+			
+			mainDao.insertRecommandUser(user);
 		}
 		return list;
 	}
@@ -191,7 +195,7 @@ public class MainServiceImpl implements MainService {
 			point.setUser_id(session.getAttribute("USER_ID").toString());
 			point.setRoute("3");
 			point.setAdjustment(Integer.valueOf(card.getPaid_point())>0?"1":"-1");
-			point.setPoint(card.getPaid_point());
+			point.setPoint(String.valueOf(Math.abs(Integer.valueOf(card.getPaid_point()))));
 			
 			User user = new User();
 			user.setUser_id(session.getAttribute("USER_ID").toString());
@@ -216,5 +220,70 @@ public class MainServiceImpl implements MainService {
 	 */
 	public List<Point> getUserPoints(Point point) throws Exception {
 		return mainDao.getUserPoints(point);
+	}
+	/*
+	 * get recommand user
+	 */
+	public List<Recommand_User> getRecommandUser(User user) throws Exception {
+		return mainDao.getRecommandUser(user);
+	}
+	
+	/*
+	 * recommand call
+	 */
+	public Integer callRecommandUser(Recommand_User recommand_user, HttpServletRequest request) throws Exception {
+		Integer rValue = 0;
+		HttpSession session = request.getSession();
+		
+		recommand_user.setRecommand_status("3");
+		Point point = new Point();
+		point.setUser_id(session.getAttribute("USER_ID").toString());
+		point.setRoute("10");
+		point.setPoint("50");
+		point.setAdjustment("-1");
+		
+		User user = new User();
+		user.setUser_id(session.getAttribute("USER_ID").toString());
+		user.setPoint("-50");
+		
+		if (Integer.valueOf(mainDao.getUserPoint(user).get(0).getPoint()) > 50) {
+			rValue += mainDao.insertUserPointWithSurvey(point);
+			rValue += mainDao.updateUserPointWithSurveyVote(user);
+			rValue = mainDao.updateRecommandStatus(recommand_user);
+		}
+		
+		return rValue;
+	}
+	
+	/*
+	 * recommand deny
+	 */
+	public Integer denyRecommandUser(Recommand_User recommand_user, HttpServletRequest request) throws Exception {
+		Integer rValue = 0;
+		HttpSession session = request.getSession();
+		
+		recommand_user.setRecommand_status("2");
+		
+		User user = new User();
+		user.setUser_id(recommand_user.getUser_id());
+		
+		Recommand_Denial recommand_denial = new Recommand_Denial();
+		recommand_denial.setUser_id(session.getAttribute("USER_ID").toString());
+		recommand_denial.setDenial_user_id(recommand_user.getRecommand_user_id());
+		if (mainDao.checkDenial(user) > 4) {
+			return 0;
+		}
+		
+		rValue = mainDao.updateRecommandStatus(recommand_user);
+		rValue = mainDao.insertUserRecommandDenial(recommand_denial);
+		
+		return rValue;
+	}
+	
+	/*
+	 * get called recommand list
+	 */
+	public List<User> calledMeRecommandedUser(User user) throws Exception {
+		return mainDao.calledMeRecommandedUser(user);
 	}
 }

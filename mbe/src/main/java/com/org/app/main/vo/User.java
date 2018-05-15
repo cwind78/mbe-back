@@ -47,7 +47,21 @@ public class User {
 	private String grade;
 	private String push_message_aggrement;
 	private String email_aggrement;
+	private String seq_no;
+	private String recommand_status;
 	
+	public String getRecommand_status() {
+		return recommand_status;
+	}
+	public void setRecommand_status(String recommand_status) {
+		this.recommand_status = recommand_status;
+	}
+	public String getSeq_no() {
+		return seq_no;
+	}
+	public void setSeq_no(String seq_no) {
+		this.seq_no = seq_no;
+	}
 	public String getUser_id() {
 		return user_id;
 	}

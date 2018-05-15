@@ -31,6 +31,7 @@ import com.org.app.main.vo.Cards;
 import com.org.app.main.vo.Code;
 import com.org.app.main.vo.Filters;
 import com.org.app.main.vo.Point;
+import com.org.app.main.vo.Recommand_User;
 import com.org.app.main.vo.Recommand_filter;
 import com.org.app.main.vo.Result;
 import com.org.app.main.vo.Survey;
@@ -370,6 +371,80 @@ public class MainCtrl {
 			return new ResponseEntity<List<Point>>(list, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<List<Point>>(HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	/*
+	 * get user point lists
+	 */
+	@RequestMapping(value="/recommand", method=RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<List<Recommand_User>> getRecommandUser(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		User user = new User();
+		HttpSession session = request.getSession();
+		user.setUser_id(session.getAttribute("USER_ID").toString());
+		List<Recommand_User> list = mainService.getRecommandUser(user);
+		
+		if (list != null && list.size() > 0) {
+			return new ResponseEntity<List<Recommand_User>>(list, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<List<Recommand_User>>(HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	/*
+	 * call recommand user
+	 */
+	@RequestMapping(value="/recommand/call", method=RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<List<Result>> callRecommandUser(@RequestBody Recommand_User recommand_user, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		Integer rValue  = mainService.callRecommandUser(recommand_user, request);
+		Result result = new Result();
+		result.setResult(String.valueOf(rValue));
+		List<Result> list = new ArrayList<Result>();
+		list.add(result);
+		
+		if (rValue > 0) {
+			return new ResponseEntity<List<Result>>(list, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<List<Result>>(HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	/*
+	 * deny recommand user
+	 */
+	@RequestMapping(value="/recommand/deny", method=RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<List<Result>> denyRecommandUser(@RequestBody Recommand_User recommand_user, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		Integer rValue  = mainService.denyRecommandUser(recommand_user, request);
+		Result result = new Result();
+		result.setResult(String.valueOf(rValue));
+		List<Result> list = new ArrayList<Result>();
+		list.add(result);
+		
+		if (rValue > 0) {
+			return new ResponseEntity<List<Result>>(list, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<List<Result>>(HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	/*
+	 * get called recommand list
+	 */
+	@RequestMapping(value="/called", method=RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<List<User>> calledMeRecommandedUser(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		User user = new User();
+		HttpSession session = request.getSession();
+		user.setUser_id(session.getAttribute("USER_ID").toString());
+		List<User> list = mainService.calledMeRecommandedUser(user);
+		
+		if (list != null && list.size() > 0) {
+			return new ResponseEntity<List<User>>(list, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<List<User>>(HttpStatus.NOT_FOUND);
 		}
 	}
 }

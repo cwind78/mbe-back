@@ -8,6 +8,8 @@ import com.org.app.main.vo.Cards;
 import com.org.app.main.vo.Code;
 import com.org.app.main.vo.Filters;
 import com.org.app.main.vo.Point;
+import com.org.app.main.vo.Recommand_Denial;
+import com.org.app.main.vo.Recommand_User;
 import com.org.app.main.vo.Recommand_filter;
 import com.org.app.main.vo.Survey;
 import com.org.app.main.vo.Surveys;
@@ -73,4 +75,23 @@ public interface MainService {
 	 * get user point lists
 	 */
 	public List<Point> getUserPoints(Point point) throws Exception;
+	/*
+	 * get recommand user
+	 */
+	public List<Recommand_User> getRecommandUser(User user) throws Exception;
+	
+	/*
+	 * recommand call
+	 */
+	public Integer callRecommandUser(Recommand_User recommand_user, HttpServletRequest request) throws Exception;
+	
+	/*
+	 * recommand deny
+	 */
+	public Integer denyRecommandUser(Recommand_User recommand_user, HttpServletRequest request) throws Exception;
+	
+	/*
+	 * get called recommand list
+	 */
+	public List<User> calledMeRecommandedUser(User user) throws Exception;
 }

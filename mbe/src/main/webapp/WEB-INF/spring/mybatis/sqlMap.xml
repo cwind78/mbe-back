@@ -15,6 +15,8 @@
 		<typeAlias type="com.org.app.main.vo.Survey" alias="Survey" />
 		<typeAlias type="com.org.app.main.vo.Point" alias="Point" />
 		<typeAlias type="com.org.app.main.vo.Card" alias="Card" />
+		<typeAlias type="com.org.app.main.vo.Recommand_User" alias="Recommand_User" />
+		<typeAlias type="com.org.app.main.vo.Recommand_Denial" alias="Recommand_Denial" />
 	</typeAliases>
     
 	<mappers>

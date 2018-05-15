@@ -214,4 +214,89 @@
 		order by 
 			a.regist_date desc
 	</select>
+	
+	<insert id="insertRecommandUser" parameterType="User">
+		insert into user_recommand (
+			user_id, recommand_user_id, recommand_status, caution_yn, regist_date, regist_user_id,
+			gender, age, hobby, job, area, purpose
+		)
+		select
+			c.user_id,
+			a.user_id,
+			'1' recommand_status,
+			case when e.user_id is null then 'N' else 'Y' end caution_yn,
+			now(),
+			#{user_id},
+			count(case when b.filter_cd = 'UG' then 1 end) gender,
+			count(case when b.filter_cd = 'UE' then 1 end) age,
+			count(case when b.filter_cd = 'UH' then 1 end) hobby,
+			count(case when b.filter_cd = 'UJ' then 1 end) job,
+			count(case when b.filter_cd = 'UA' then 1 end) area,
+			count(case when b.filter_cd = 'UP' then 1 end) purpose
+		from
+			user a join user_recommand_filter b on 
+				b.user_id = #{user_id} and
+		        a.user_id != b.user_id and
+		        (
+					(b.filter_cd = 'UG' and a.gender = b.filter_value)
+		            or (b.filter_cd = 'UE' and (floor(datediff(a.birth, now())/365)*-1+1) between b.filter_value and b.filter_value + 9)
+		            or (b.filter_cd = 'UH' and (a.hobby1 = b.filter_value or a.hobby2 = b.filter_value or a.hobby3 = b.filter_value))
+		            or (b.filter_cd = 'UJ' and a.job = b.filter_value)
+		            or (b.filter_cd = 'UA' and a.area = b.filter_value)
+		            or (b.filter_cd = 'UP' and (a.purpose1 = b.filter_value or a.purpose2 = b.filter_value))
+				)
+			join user c on b.user_id = c.user_id
+		    left outer join user_recommand d on c.user_id = d.user_id and date_format(d.regist_date, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+		    left outer join (select user_id from user_caution group by user_id) e on a.user_id = e.user_id
+		    left outer join user_recommand_denial f on a.user_id = f.denial_user_id and c.user_id = f.user_id and f.use_yn = 'Y'
+		    left outer join user_recommand_denial g on a.user_id = g.user_id and c.user_id = g.denial_user_id and g.use_yn = 'Y'
+		where
+			b.use_yn = 'Y'
+		    and a.recommand_aggrement = 'Y'
+		    and c.recommand_aggrement = 'Y'
+		    and d.user_id is null
+		    and f.user_id is null
+		    and g.user_id is null
+		group by c.user_id, a.user_id, e.user_id
+		limit 5;
+	</insert>
+	
+	<select id="getRecommandUser" parameterType="User" resultType="Recommand_User">
+		select a.seq_no, a.recommand_user_id, b.nick_name user_name, a.caution_yn, a.gender, a.age, a.hobby, a.job, a.area, a.purpose, b.photo
+			, a.recommand_status
+		from user_recommand a
+			join user b on a.recommand_user_id = b.user_id 
+		where a.user_id = #{user_id}
+			and a.recommand_status in ('1', '3')
+			and date_format(a.regist_date, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+	</select>
+	
+	<update id="updateRecommandStatus" parameterType="Recommand_User">
+		update user_recommand set recommand_status = #{recommand_status} where seq_no = #{seq_no}
+	</update>
+	
+	<insert id="insertUserRecommandDenial" parameterType="Recommand_Denial">
+		insert into user_recommand_denial (
+			user_id, denial_user_id, use_yn, regist_date, regist_user_id
+		) values (
+			#{user_id}, #{denial_user_id}, 'Y', now(), #{user_id}
+		)
+	</insert>
+	
+	<select id="checkDenial" parameterType="User" resultType="Integer">
+		select count(*) from user_recommand_denial a where date_format(a.regist_date, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+			and a.user_id = #{user_id}
+			and a.use_yn = 'Y'
+	</select>
+	
+	<select id="calledMeRecommandedUser" parameterType="User" resultType="User">
+		select 
+			b.nick_name, b.user_id, b.job, b.area, b.purpose1, b.purpose2, b.hobby1, b.hobby2, b.hobby3, b.photo, b.remark,
+			a.seq_no, a.recommand_status
+		from 
+			user_recommand a 
+			join user b on a.user_id = b.user_id
+		where a.recommand_user_id = #{user_id}
+			and a.recommand_status in ('3', '4')
+	</select>
 </mapper>

@@ -6,6 +6,8 @@ import java.util.Map;
 import com.org.app.main.vo.Card;
 import com.org.app.main.vo.Code;
 import com.org.app.main.vo.Point;
+import com.org.app.main.vo.Recommand_Denial;
+import com.org.app.main.vo.Recommand_User;
 import com.org.app.main.vo.Recommand_filter;
 import com.org.app.main.vo.Survey;
 import com.org.app.main.vo.Surveys;
@@ -99,4 +101,34 @@ public interface MainDao {
 	 * get user point lists
 	 */
 	public List<Point> getUserPoints(Point point) throws Exception;
+	
+	/*
+	 * recommand user(insert user_recommand)
+	 */
+	public Integer insertRecommandUser(User user) throws Exception;
+	
+	/*
+	 * get recommand user
+	 */
+	public List<Recommand_User> getRecommandUser(User user) throws Exception;
+	
+	/*
+	 * update recommand status
+	 */
+	public Integer updateRecommandStatus(Recommand_User recommand_user) throws Exception;
+	
+	/*
+	 * insert recommand denial
+	 */
+	public Integer insertUserRecommandDenial(Recommand_Denial recommand_denial) throws Exception;
+	
+	/*
+	 * get denial count on today
+	 */
+	public Integer checkDenial(User user) throws Exception;
+	
+	/*
+	 * get called recommand list
+	 */
+	public List<User> calledMeRecommandedUser(User user) throws Exception;
 }

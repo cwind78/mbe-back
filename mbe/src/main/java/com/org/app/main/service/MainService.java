@@ -3,12 +3,10 @@ package com.org.app.main.service;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
-
 import com.org.app.main.vo.Cards;
 import com.org.app.main.vo.Code;
 import com.org.app.main.vo.Filters;
 import com.org.app.main.vo.Point;
-import com.org.app.main.vo.Recommand_Denial;
 import com.org.app.main.vo.Recommand_User;
 import com.org.app.main.vo.Recommand_filter;
 import com.org.app.main.vo.Survey;
@@ -94,4 +92,23 @@ public interface MainService {
 	 * get called recommand list
 	 */
 	public List<User> calledMeRecommandedUser(User user) throws Exception;
+	
+	/*
+	 * insert recommand acceptance
+	 */
+	public Integer insertRecommandAcceptance(User user) throws Exception;
+	
+	/*
+	 * deny call
+	 */
+	public Integer denyCall(User user) throws Exception;
+	
+	/*
+	 * check and insert user token
+	 */
+	public Integer saveToken(User user) throws Exception;
+	/*
+	 * fcm push notification sender
+	 */
+	public void sendMessage(List<User> users) throws Exception;
 }

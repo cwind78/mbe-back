@@ -244,6 +244,11 @@
 		</dependency>
 	
 		<!-- firebase -->
+		<!--dependency>
+		  <groupId>com.illicis</groupId>
+		  <artifactId>fcm-sender-java</artifactId>
+		  <version>0.0.1</version>
+		</dependency-->
 		
 		<dependency>
 		  <groupId>com.google.firebase</groupId>

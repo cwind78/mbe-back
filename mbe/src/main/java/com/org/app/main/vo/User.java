@@ -49,7 +49,42 @@ public class User {
 	private String email_aggrement;
 	private String seq_no;
 	private String recommand_status;
+	private String classification;
+	private String caution_yn;
+	private String acceptance_yn;
+	private String recommand_user_id;
+	private String token;
 	
+	public String getToken() {
+		return token;
+	}
+	public void setToken(String token) {
+		this.token = token;
+	}
+	public String getRecommand_user_id() {
+		return recommand_user_id;
+	}
+	public void setRecommand_user_id(String recommand_user_id) {
+		this.recommand_user_id = recommand_user_id;
+	}
+	public String getClassification() {
+		return classification;
+	}
+	public void setClassification(String classification) {
+		this.classification = classification;
+	}
+	public String getCaution_yn() {
+		return caution_yn;
+	}
+	public void setCaution_yn(String caution_yn) {
+		this.caution_yn = caution_yn;
+	}
+	public String getAcceptance_yn() {
+		return acceptance_yn;
+	}
+	public void setAcceptance_yn(String acceptance_yn) {
+		this.acceptance_yn = acceptance_yn;
+	}
 	public String getRecommand_status() {
 		return recommand_status;
 	}

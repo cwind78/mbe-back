@@ -1,5 +1,10 @@
 package com.org.app.main.service;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -250,6 +255,8 @@ public class MainServiceImpl implements MainService {
 			rValue += mainDao.insertUserPointWithSurvey(point);
 			rValue += mainDao.updateUserPointWithSurveyVote(user);
 			rValue = mainDao.updateRecommandStatus(recommand_user);
+			
+			sendMessage(mainDao.getUserDeviceToken(user));
 		}
 		
 		return rValue;
@@ -270,7 +277,7 @@ public class MainServiceImpl implements MainService {
 		Recommand_Denial recommand_denial = new Recommand_Denial();
 		recommand_denial.setUser_id(session.getAttribute("USER_ID").toString());
 		recommand_denial.setDenial_user_id(recommand_user.getRecommand_user_id());
-		if (mainDao.checkDenial(user) > 4) {
+		if (mainDao.checkDenial(user) > 3) {
 			return 0;
 		}
 		
@@ -285,5 +292,98 @@ public class MainServiceImpl implements MainService {
 	 */
 	public List<User> calledMeRecommandedUser(User user) throws Exception {
 		return mainDao.calledMeRecommandedUser(user);
+	}
+	
+	/*
+	 * insert recommand acceptance
+	 */
+	public Integer insertRecommandAcceptance(User user) throws Exception {
+		return mainDao.insertRecommandAcceptance(user);
+	}
+	
+	/*
+	 * deny call
+	 */
+	public Integer denyCall(User user) throws Exception {
+		Integer rValue = 0;
+		Recommand_User recommand_user = new Recommand_User();
+		recommand_user.setRecommand_status("4");
+		recommand_user.setSeq_no(user.getSeq_no());
+		
+		Recommand_Denial recommand_denial = new Recommand_Denial();
+		recommand_denial.setUser_id(user.getRecommand_user_id());
+		recommand_denial.setDenial_user_id(user.getUser_id());
+		
+		User deny_user = new User();
+		deny_user.setUser_id(user.getRecommand_user_id());
+		
+		if (mainDao.checkDenial(deny_user) > 3) {
+			return 0;
+		}
+		
+		rValue += mainDao.updateRecommandStatus(recommand_user);
+		rValue += mainDao.insertUserRecommandDenial(recommand_denial);
+		
+		return rValue;
+	}
+	
+	/*
+	 * check and insert user token
+	 */
+	public Integer saveToken(User user) throws Exception {
+		if (mainDao.checkExistToken(user) > 0) {
+			return 0;
+		}
+		
+		return mainDao.insertToken(user);
+	}
+	
+	/*
+	 * fcm push notification sender
+	 */
+	public void sendMessage(List<User> users)throws Exception {
+		String token = "";
+		String apiKey = "AAAASRyI5go:APA91bFV439TLMmo_6n2aG7PCW9jWG13ytA--hU-oxR-kXj26Un8lILtGiypQ3kx9y1nAjnZh0_KCYNlSn60zt7oHSmyWYyYSIbeFbK-KI2G5CSXY_g6Szvd299r4I393zzrfH_s7IdR";
+		System.out.println(users!=null?users.size():0);
+		for (User user : users) {
+			token = user.getToken();
+			System.out.println(token);
+			if (token != null && !token.equals("")) {
+				URL url = new URL("https://fcm.googleapis.com/fcm/send");
+				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+				conn.setDoOutput(true);
+				conn.setRequestMethod("POST");
+				conn.setRequestProperty("Content-Type", "application/json");
+				conn.setRequestProperty("Authorization", "key=" + apiKey);
+	
+				conn.setDoOutput(true);
+	
+				// 이걸로 보내면 특정 토큰을 가지고있는 어플에만 알림을 날려준다  위에 둘중에 한개 골라서 날려주자
+				String input = "{\"notification\" : {\"title\" : \"Calledme\", \"body\" : \"Checkandacceptordeny\"}, \"to\":\""+token+"\"}";
+	
+				OutputStream os = conn.getOutputStream();
+	
+				// 서버에서 날려서 한글 깨지는 사람은 아래처럼  UTF-8로 인코딩해서 날려주자
+				os.write(input.getBytes("UTF-8"));
+				os.flush();
+				os.close();
+	
+				int responseCode = conn.getResponseCode();
+				System.out.println("\nSending 'POST' request to URL : " + url);
+				System.out.println("Post parameters : " + input);
+				System.out.println("Response Code : " + responseCode);
+	
+				BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+				String inputLine;
+				StringBuffer response = new StringBuffer();
+	
+				while ((inputLine = in.readLine()) != null) {
+					response.append(inputLine);
+				}
+				in.close();
+				//print result
+				System.out.println(response.toString());
+			}
+		}
 	}
 }

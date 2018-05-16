@@ -247,7 +247,7 @@
 				)
 			join user c on b.user_id = c.user_id
 		    left outer join user_recommand d on c.user_id = d.user_id and date_format(d.regist_date, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
-		    left outer join (select user_id from user_caution group by user_id) e on a.user_id = e.user_id
+		    left outer join (select user_id from user_caution where result = '2' group by user_id) e on a.user_id = e.user_id
 		    left outer join user_recommand_denial f on a.user_id = f.denial_user_id and c.user_id = f.user_id and f.use_yn = 'Y'
 		    left outer join user_recommand_denial g on a.user_id = g.user_id and c.user_id = g.denial_user_id and g.use_yn = 'Y'
 		where
@@ -267,8 +267,13 @@
 		from user_recommand a
 			join user b on a.recommand_user_id = b.user_id 
 		where a.user_id = #{user_id}
-			and a.recommand_status in ('1', '3')
-			and date_format(a.regist_date, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+			and (
+					(
+						a.recommand_status in ('1') and date_format(a.regist_date, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+					) or
+					a.recommand_status in ('3', '4') 
+				)
+		order by a.regist_date desc
 	</select>
 	
 	<update id="updateRecommandStatus" parameterType="Recommand_User">
@@ -291,12 +296,52 @@
 	
 	<select id="calledMeRecommandedUser" parameterType="User" resultType="User">
 		select 
-			b.nick_name, b.user_id, b.job, b.area, b.purpose1, b.purpose2, b.hobby1, b.hobby2, b.hobby3, b.photo, b.remark,
-			a.seq_no, a.recommand_status
+			'receipt' classification, a.seq_no, c.nick_name, c.user_id, a.recommand_user_id, c.photo, c.job, c.area, c.hobby1, c.hobby2, c.hobby3, 
+			c.purpose1, c.purpose2, c.gender, c.remark,
+			case when d.user_id is null then 'N' else 'Y' end caution_yn,
+			case when b.accept_user_id is null then 'N' else 'Y' end acceptance_yn
 		from 
-			user_recommand a 
-			join user b on a.user_id = b.user_id
-		where a.recommand_user_id = #{user_id}
-			and a.recommand_status in ('3', '4')
+			user_recommand a
+			left outer join user_recommand_acceptance b on a.recommand_user_id = b.accept_user_id
+			join user c on a.user_id = c.user_id
+			left outer join (select user_id from user_caution where result = '2' group by user_id) d on a.user_id = d.user_id
+		where 
+			a.recommand_status = '3' 
+			and a.recommand_user_id = #{user_id}
+		union all
+		select 
+			'send' classification, a.seq_no, c.nick_name, a.user_id, c.user_id recommand_user_id, c.photo, c.job, c.area, c.hobby1, c.hobby2, c.hobby3, 
+			c.purpose1, c.purpose2, c.gender, c.remark, a.caution_yn,
+			case when b.accept_user_id is null then 'N' else 'Y' end acceptance_yn
+		from 
+			user_recommand a
+			join user_recommand_acceptance b on a.recommand_user_id = b.accept_user_id
+			join user c on a.recommand_user_id = c.user_id
+		where 
+			a.recommand_status = '3' 
+			and a.user_id = #{user_id}
+	</select>
+	
+	<insert id="insertRecommandAcceptance" parameterType="User">
+		insert into user_recommand_acceptance (
+			recommand_seq_no, called_user_id, accept_user_id, regist_date, regist_user_id
+		) values (
+			#{seq_no}, #{user_id}, #{recommand_user_id}, now(), #{recommand_user_id}
+		)
+	</insert>
+	
+	<select id="checkExistToken" parameterType="User" resultType="Integer">
+		select count(*) from user_token where user_id = #{user_id} and token = #{token}
+	</select>
+	
+	<insert id="insertToken" parameterType="User">
+		insert into user_token (user_id, token, regist_date, regist_user_id)
+		values (
+			#{user_id}, #{token}, now(), #{user_id}
+		)
+	</insert>
+	
+	<select id="getUserDeviceToken" parameterType="User" resultType="User">
+		select token from user_token where user_id = #{user_id}
 	</select>
 </mapper>

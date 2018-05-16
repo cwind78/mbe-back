@@ -131,4 +131,24 @@ public interface MainDao {
 	 * get called recommand list
 	 */
 	public List<User> calledMeRecommandedUser(User user) throws Exception;
+	
+	/*
+	 * insert recommand acceptance
+	 */
+	public Integer insertRecommandAcceptance(User user) throws Exception;
+	
+	/*
+	 * check duple user token
+	 */
+	public Integer checkExistToken(User user) throws Exception;
+	
+	/*
+	 * insert user token
+	 */
+	public Integer insertToken(User user) throws Exception;
+	
+	/*
+	 * get user device token
+	 */
+	public List<User> getUserDeviceToken(User user) throws Exception;
 }

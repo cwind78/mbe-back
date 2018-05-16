@@ -447,4 +447,64 @@ public class MainCtrl {
 			return new ResponseEntity<List<User>>(HttpStatus.NOT_FOUND);
 		}
 	}
+	
+	/*
+	 * recommand acceptance
+	 */
+	@RequestMapping(value="/called/accept", method=RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<List<Result>> insertRecommandAcceptance(@RequestBody User user, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		Integer rValue  = mainService.insertRecommandAcceptance(user);
+		Result result = new Result();
+		result.setResult(String.valueOf(rValue));
+		List<Result> list = new ArrayList<Result>();
+		list.add(result);
+		
+		if (rValue > 0) {
+			return new ResponseEntity<List<Result>>(list, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<List<Result>>(HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	/*
+	 * deny call
+	 */
+	@RequestMapping(value="/called/deny", method=RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<List<Result>> denyCall(@RequestBody User user, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		Integer rValue  = mainService.denyCall(user);
+		Result result = new Result();
+		result.setResult(String.valueOf(rValue));
+		List<Result> list = new ArrayList<Result>();
+		list.add(result);
+		
+		if (rValue > 0) {
+			return new ResponseEntity<List<Result>>(list, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<List<Result>>(HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	/*
+	 * save token
+	 */
+	@RequestMapping(value="/token/{token}", method=RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<List<Result>> saveToken(@PathVariable("token") String token, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		User user = new User();
+		HttpSession session = request.getSession();
+		user.setUser_id(session.getAttribute("USER_ID").toString());
+		user.setToken(token);
+		Integer rValue = mainService.saveToken(user);
+		Result result = new Result();
+		result.setResult(String.valueOf(rValue));
+		List<Result> list = new ArrayList<Result>();
+		
+		if (rValue > 0) {
+			return new ResponseEntity<List<Result>>(list, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<List<Result>>(HttpStatus.NOT_FOUND);
+		}
+	}
 }

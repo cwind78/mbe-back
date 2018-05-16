@@ -196,4 +196,32 @@ public class MainDaoImpl implements MainDao {
 	public List<User> calledMeRecommandedUser(User user) throws Exception {
 		return sqlSessionTemplate.selectList("main.calledMeRecommandedUser", user);
 	}
+	
+	/*
+	 * insert recommand acceptance
+	 */
+	public Integer insertRecommandAcceptance(User user) throws Exception {
+		return sqlSessionTemplate.insert("main.insertRecommandAcceptance", user);
+	}
+	
+	/*
+	 * check duple user token
+	 */
+	public Integer checkExistToken(User user) throws Exception {
+		return sqlSessionTemplate.selectOne("main.checkExistToken", user);
+	}
+	
+	/*
+	 * insert user token
+	 */
+	public Integer insertToken(User user) throws Exception {
+		return sqlSessionTemplate.insert("main.insertToken", user);
+	}
+	
+	/*
+	 * get user device token
+	 */
+	public List<User> getUserDeviceToken(User user) throws Exception {
+		return sqlSessionTemplate.selectList("main.getUserDeviceToken", user);
+	}
 }

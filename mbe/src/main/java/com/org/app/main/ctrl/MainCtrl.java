@@ -507,4 +507,26 @@ public class MainCtrl {
 			return new ResponseEntity<List<Result>>(HttpStatus.NOT_FOUND);
 		}
 	}
+	
+	/*
+	 * logout
+	 */
+	@RequestMapping(value="/logout", method=RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<List<Result>> logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		HttpSession session = request.getSession(false);
+		session.invalidate();
+		
+		Result result = new Result();
+		List<Result> resultList = new ArrayList<Result>();
+		result.setResult("1");
+				
+		resultList.add(result);
+		
+		if (resultList.size() > 0) {
+			return new ResponseEntity<List<Result>>(resultList, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<List<Result>>(HttpStatus.NOT_FOUND);
+		}
+	}
 }

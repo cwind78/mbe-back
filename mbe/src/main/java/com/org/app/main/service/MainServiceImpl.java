@@ -359,7 +359,7 @@ public class MainServiceImpl implements MainService {
 				conn.setDoOutput(true);
 	
 				// 이걸로 보내면 특정 토큰을 가지고있는 어플에만 알림을 날려준다  위에 둘중에 한개 골라서 날려주자
-				String input = "{\"notification\" : {\"title\" : \"Calledme\", \"body\" : \"Checkandacceptordeny\"}, \"to\":\""+token+"\"}";
+				String input = "{\"notification\" : {\"title\" : \"Called me\", \"body\" : \"Check and accept or deny\"}, \"to\":\""+token+"\"}";
 	
 				OutputStream os = conn.getOutputStream();
 	
